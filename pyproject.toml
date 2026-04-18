@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "plumbline-ai"
-version = "0.1.0"
+version = "0.1.1"
 description = "Write-time verification for AI-generated code"
 readme = "README.md"
 license = "MIT"
@@ -43,10 +43,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Core sidecar engines
+# Core sidecar engines — v0.1.1 requires the calibrated versions
+# (CHECK validator enforcement in morpheus-mcp 0.3.1, honest mutation-score
+# reporting in seraph-ai 0.2.1)
 context = ["git-sentinel>=0.4.0"]
-verify = ["seraph-ai>=0.1.1"]
-gate = ["morpheus-mcp>=0.3.0"]
+verify = ["seraph-ai>=0.2.1"]
+gate = ["morpheus-mcp>=0.3.1"]
 
 # All engines
 all = ["plumbline-ai[context,verify,gate]"]
@@ -62,6 +64,7 @@ dev = [
 [project.scripts]
 plumbline = "plumbline.cli.app:app"
 plumbline-mcp = "plumbline.mcp.server:main"
+plumbline-btw = "plumbline.hooks.btw:main"
 
 [project.urls]
 Homepage = "https://plumblinehq.com"

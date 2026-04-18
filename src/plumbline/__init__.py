@@ -1,3 +1,3 @@
-"""Plumbline — write-time verification for AI-generated code."""
+"""Plumbline — write-time intelligence for AI-generated code."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
