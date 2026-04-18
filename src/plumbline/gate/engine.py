@@ -54,7 +54,9 @@ async def init_plan(plan_file: str) -> str:
 
             return summary
     except (FileNotFoundError, ValueError, sqlite3.Error, OSError) as exc:
-        return f"Error: {exc}"
+        return f"Gate engine error: {exc}"
+    except Exception as exc:  # noqa: BLE001 — MCP boundary; must return text, not raise
+        return f"Gate engine failed unexpectedly: {exc}"
 
 
 async def advance_task(task_id: str, phase: str, evidence: dict[str, Any]) -> str:
@@ -75,14 +77,16 @@ async def advance_task(task_id: str, phase: str, evidence: dict[str, Any]) -> st
         return _NOT_INSTALLED
 
     try:
-        phase_enum = Phase(phase.upper())
-    except ValueError:
-        valid = ", ".join(p.value for p in Phase)
-        return f"Error: Invalid phase '{phase}'. Valid phases: {valid}"
+        try:
+            phase_enum = Phase(phase.upper())
+        except ValueError:
+            valid = ", ".join(p.value for p in Phase)
+            return f"Error: Invalid phase '{phase}'. Valid phases: {valid}"
 
-    evidence_dict = evidence if isinstance(evidence, dict) else json.loads(str(evidence))
+        evidence_dict = (
+            evidence if isinstance(evidence, dict) else json.loads(str(evidence))
+        )
 
-    try:
         with MorpheusStore(config.db_path) as store:
             result, _phase_record = advance(
                 store, task_id, phase_enum, evidence_dict,
@@ -107,8 +111,12 @@ async def advance_task(task_id: str, phase: str, evidence: dict[str, Any]) -> st
                 phase_order=active_phase_order,
                 extra_message=extra,
             )
-    except (sqlite3.Error, OSError) as exc:
-        return f"Error: {exc}"
+    except json.JSONDecodeError as exc:
+        return f"Error: Invalid evidence JSON: {exc}"
+    except (FileNotFoundError, ValueError, sqlite3.Error, OSError) as exc:
+        return f"Gate engine error: {exc}"
+    except Exception as exc:  # noqa: BLE001 — MCP boundary; must return text, not raise
+        return f"Gate engine failed unexpectedly: {exc}"
 
 
 async def get_status(plan_id: str = "") -> str:
@@ -139,5 +147,7 @@ async def get_status(plan_id: str = "") -> str:
             active = [t for t in tasks if t.status.value == "in_progress"]
             progress_by_task = {t.id: store.get_progress(t.id) for t in active}
             return format_status(plan, tasks, phases_by_task, progress_by_task)
-    except (sqlite3.Error, OSError) as exc:
-        return f"Error: {exc}"
+    except (FileNotFoundError, ValueError, sqlite3.Error, OSError) as exc:
+        return f"Gate engine error: {exc}"
+    except Exception as exc:  # noqa: BLE001 — MCP boundary; must return text, not raise
+        return f"Gate engine failed unexpectedly: {exc}"

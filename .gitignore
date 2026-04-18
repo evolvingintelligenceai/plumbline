@@ -17,3 +17,5 @@ htmlcov/
 .env
 .venv/
 venv/
+.plan_file
+plans/

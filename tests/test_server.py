@@ -5,10 +5,10 @@ from __future__ import annotations
 from plumbline.mcp.server import mcp
 
 
-def test_server_has_nine_tools() -> None:
-    """The unified surface exposes exactly 9 tools."""
+def test_server_has_eight_tools() -> None:
+    """The unified surface exposes exactly 8 tools in v0.1.0."""
     tools = mcp._tool_manager._tools  # noqa: SLF001
-    assert len(tools) == 9, f"Expected 9 tools, got {len(tools)}: {list(tools.keys())}"
+    assert len(tools) == 8, f"Expected 8 tools, got {len(tools)}: {list(tools.keys())}"
 
 
 def test_all_tools_have_plumbline_prefix() -> None:
@@ -25,7 +25,6 @@ def test_tool_names() -> None:
         "plumbline_context",
         "plumbline_query",
         "plumbline_co_changes",
-        "plumbline_check",
         "plumbline_verify",
         "plumbline_explain",
         "plumbline_init",

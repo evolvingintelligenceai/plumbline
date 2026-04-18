@@ -65,20 +65,6 @@ async def plumbline_co_changes(file_path: str, limit: int = 50, project_root: st
 
 
 @mcp.tool()
-async def plumbline_check(file_path: str, diff: str = "", project_root: str = "") -> str:
-    """Fast pre-write verification. Run before writing or editing a file.
-
-    Checks imports, security surface, escalation detection, and spec drift.
-    Returns ALLOW or BLOCK with structured findings. Target: <500ms.
-
-    If BLOCK: do not write the file. Read the findings. Fix first.
-    """
-    from plumbline.verify.engine import run_check
-
-    return await run_check(file_path, diff, project_root)
-
-
-@mcp.tool()
 async def plumbline_verify(project_root: str = "") -> str:
     """Deep pre-commit verification. Run before committing.
 

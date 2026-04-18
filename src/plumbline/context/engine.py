@@ -6,6 +6,7 @@ not the MCP tool closures. Same code path, no MCP overhead.
 
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 
 
@@ -57,11 +58,16 @@ async def get_project_context(project_root: str = "") -> str:
     except ImportError:
         return _NOT_INSTALLED
 
-    store = _open_store(project_root)
-    if store is None:
-        return _NO_SENTINEL
-    with store:
-        return format_project_context(store)
+    try:
+        store = _open_store(project_root)
+        if store is None:
+            return _NO_SENTINEL
+        with store:
+            return format_project_context(store)
+    except (FileNotFoundError, ValueError, sqlite3.Error, OSError) as exc:
+        return f"Context engine error: {exc}"
+    except Exception as exc:  # noqa: BLE001 — MCP boundary; must return text, not raise
+        return f"Context engine failed unexpectedly: {exc}"
 
 
 async def search_knowledge(query: str, limit: int = 20, project_root: str = "") -> str:
@@ -71,12 +77,17 @@ async def search_knowledge(query: str, limit: int = 20, project_root: str = "") 
     except ImportError:
         return _NOT_INSTALLED
 
-    store = _open_store(project_root)
-    if store is None:
-        return _NO_SENTINEL
-    with store:
-        results = store.search(query, limit=limit, offset=0)
-        return format_query_results(results, query, total=None, offset=0)
+    try:
+        store = _open_store(project_root)
+        if store is None:
+            return _NO_SENTINEL
+        with store:
+            results = store.search(query, limit=limit, offset=0)
+            return format_query_results(results, query, total=None, offset=0)
+    except (FileNotFoundError, ValueError, sqlite3.Error, OSError) as exc:
+        return f"Context engine error: {exc}"
+    except Exception as exc:  # noqa: BLE001 — MCP boundary; must return text, not raise
+        return f"Context engine failed unexpectedly: {exc}"
 
 
 async def get_co_changes(file_path: str, limit: int = 50, project_root: str = "") -> str:
@@ -86,9 +97,14 @@ async def get_co_changes(file_path: str, limit: int = 50, project_root: str = ""
     except ImportError:
         return _NOT_INSTALLED
 
-    store = _open_store(project_root)
-    if store is None:
-        return _NO_SENTINEL
-    with store:
-        co_changes = store.get_co_changes(file_path, limit=limit)
-        return format_co_changes(file_path, co_changes)
+    try:
+        store = _open_store(project_root)
+        if store is None:
+            return _NO_SENTINEL
+        with store:
+            co_changes = store.get_co_changes(file_path, limit=limit)
+            return format_co_changes(file_path, co_changes)
+    except (FileNotFoundError, ValueError, sqlite3.Error, OSError) as exc:
+        return f"Context engine error: {exc}"
+    except Exception as exc:  # noqa: BLE001 — MCP boundary; must return text, not raise
+        return f"Context engine failed unexpectedly: {exc}"
